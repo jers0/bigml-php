@@ -379,7 +379,7 @@ class BigML {
          $resource = $r->resource;
       }
 
-      if (preg_match('/(source|dataset|model|evaluation|ensemble|batchprediction|batchcentroid|prediction|cluster|centroid|anomaly|anomalyscore|sample|project|correlation|statisticaltest|association|logisticregression|library|execution|script|topicmodel|deepnet)(\/)([a-z,0-9]{24}|[a-z,0-9]{27})$/i', $resource, $result)) {
+      if (preg_match('/(source|dataset|model|evaluation|ensemble|batchprediction|batchcentroid|prediction|cluster|centroid|anomaly|anomalyscore|sample|project|correlation|statisticaltest|association|logisticregression|library|execution|script|topicmodel|deepnet|optiml)(\/)([a-z,0-9]{24}|[a-z,0-9]{27})$/i', $resource, $result)) {
          $count = 0;
          $status = $this->_check_resource_status($resource, $queryString); 
          while ($count<$retries && !$status["ready"]) {
@@ -2731,6 +2731,91 @@ class BigML {
       if ($rest == null) return null;
       return $rest->getResponse();
    }
+
+      ##########################################################################
+    #
+    # OptiML
+    # https://bigml.com/developers/optiml
+    #
+    ##########################################################################
+    public function create_optiml($datasetIds, $data = array(), $waitTime = 3000, $retries = 10)
+    {
+        /*
+        Creates a optiml from a `dataset` or a list of datasets
+         */
+
+        $datasets = array();
+
+        if (!is_array($datasetIds)) {
+            $datasetIds = array($datasetIds);
+        }
+
+        foreach ($datasetIds as $var => $datasetId) {
+            $resource = $this->_check_resource($datasetId, null, $waitTime, $retries);
+            if ($resource == null || $resource['type'] != "dataset") {
+                error_log("Wrong dataset id");
+                return null;
+            } elseif ($resource["status"] != BigMLRequest::FINISHED) {
+                error_log($resource['message']);
+                return null;
+            }
+            array_push($datasets, $resource["id"]);
+        }
+
+        $rest = new BigMLRequest('CREATE', 'optiml', $this);
+
+        if (sizeof($datasets) > 1) {
+            $data["datasets"] = $datasets;
+        } else {
+            $data["dataset"] = $datasets[0];
+        }
+
+        $rest->setData($data);
+        $rest->setHeader('Content-Type', 'application/json');
+        $rest->setHeader('Content-Length', strlen(json_encode($data)));
+        return $rest->getResponse();
+    }
+
+    public function get_optiml($optimlId, $queryString = null, $shared_username = null, $shared_api_key = null)
+    {
+        /*
+        Retrieves a optiml.
+
+        The optimlId parameter should be a string containing the
+        optiml id or the dict returned by create_optiml.
+        As a optiml is an evolving object that is processed
+        until it reaches the FINISHED or FAULTY state, the function will
+        return a dict that encloses the optiml values and state info
+        available at the time it is called.
+
+        If this is a shared optiml, the username and sharing api key must
+        also be provided.
+         */
+        $rest = $this->get_resource_request($optimlId, "optiml", "GET", $queryString, true, 3000, 0, $shared_username, $shared_api_key);
+
+        if ($rest == null) {
+            return null;
+        }
+
+        if (is_array($rest)) {
+            return (object) $rest;
+        }
+
+        return $rest->getResponse();
+    }
+
+    public function delete_optiml($optimlId)
+    {
+        /*
+        Deletes a optiml
+         */
+        $rest = $this->get_resource_request($optimlId, "optiml", "DELETE", null);
+        if ($rest == null) {
+            return null;
+        }
+
+        return $rest->getResponse();
+    }
 
    private function _create_remote_source($file_url, $options=array()) {
       $rest = new BigMLRequest('CREATE', 'source', $this);
