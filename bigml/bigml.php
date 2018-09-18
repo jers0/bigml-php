@@ -1001,7 +1001,7 @@ class BigML {
 
       $resource = $this->_check_resource($modelOrEnsembleId, null, $waitTime, $retries);
 
-      if ($resource == null || !in_array($resource['type'],array("model","ensemble", "logisticregression")) ) {
+      if ($resource == null || !in_array($resource['type'],array("model","ensemble", "logisticregression", "deepnet", "optiml")) ) {
          error_log("Wrong model , ensemble or logistic regression id. A model, ensemble or logistic regression id is needed to create a batch prediction");
          return null;
       } elseif ($resource["status"] != BigMLRequest::FINISHED) {
@@ -1133,7 +1133,7 @@ class BigML {
 
       $resource = $this->_check_resource($modelId, null, $waitTime, $retries);
 
-      if ($resource == null || !in_array($resource['type'],array("model","ensemble", "logisticregression"))) {
+      if ($resource == null || !in_array($resource['type'],array("model", "ensemble", "logisticregression", "deepnet", "optiml"))) {
          error_log("Wrong model, ensemble or logistic_regression id. A model,  ensemble or logistic regression id is needed to create a evaluation");
          return null;
       } elseif ($resource["status"] != BigMLRequest::FINISHED) {
