@@ -3336,7 +3336,6 @@ final class BigMLRequest {
          $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
          if ($code == $this->response_code) {
-
             $header_size = curl_getinfo($curl, CURLINFO_HEADER_SIZE);
             $header = substr($response, 0, $header_size);
             $body = substr($response, $header_size);
@@ -3358,7 +3357,13 @@ final class BigMLRequest {
          } else {
             error_log("Unexpected error ". $code);
             print_r($response);
-            $this->response["code"] = BigMLRequest::HTTP_INTERNAL_SERVER_ERROR;
+
+            if($code != 402){
+               $this->response["code"] = BigMLRequest::HTTP_INTERNAL_SERVER_ERROR;
+            }else{
+               $this->response["code"] = $code;
+            }
+         
          }
           
          curl_close($curl);
